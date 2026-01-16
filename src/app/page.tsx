@@ -1,65 +1,125 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState } from 'react'
+import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+
+export default function LoginPage() {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setIsLoading(true)
+
+    const result = await signIn('credentials', {
+      username,
+      password,
+      redirect: false
+    })
+
+    setIsLoading(false)
+
+    if (result?.error) {
+      setError('Invalid username or password')
+    } else {
+      router.push('/dashboard')
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="fantasy-card torch-glow p-8 w-full max-w-md">
+        {/* D20 Icon */}
+        <div className="flex justify-center mb-6">
+          <svg
+            viewBox="0 0 100 100"
+            className="w-20 h-20 text-[var(--gold)]"
+            fill="currentColor"
+          >
+            <polygon points="50,5 95,30 95,70 50,95 5,70 5,30" fill="none" stroke="currentColor" strokeWidth="3"/>
+            <polygon points="50,5 95,30 50,50 5,30" fill="currentColor" opacity="0.3"/>
+            <polygon points="95,30 95,70 50,50" fill="currentColor" opacity="0.2"/>
+            <polygon points="50,95 95,70 50,50 5,70" fill="currentColor" opacity="0.4"/>
+            <polygon points="5,30 5,70 50,50" fill="currentColor" opacity="0.1"/>
+            <text x="50" y="58" textAnchor="middle" fontSize="24" fontFamily="Cinzel" fill="var(--forest-green)">20</text>
+          </svg>
+        </div>
+
+        {/* Title */}
+        <h1 className="text-3xl font-bold text-center mb-2 text-[var(--forest-green)]">
+          Lost Mine of Phandelver
+        </h1>
+        <p className="text-center text-[var(--stone-gray-light)] mb-8">
+          Campaign Management Portal
+        </p>
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-[var(--stone-gray)] mb-2"
+              style={{ fontFamily: 'Cinzel, serif' }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="fantasy-input w-full"
+              placeholder="Enter your username"
+              required
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-[var(--stone-gray)] mb-2"
+              style={{ fontFamily: 'Cinzel, serif' }}
             >
-              Learning
-            </a>{" "}
-            center.
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="fantasy-input w-full"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+
+          {error && (
+            <div className="danger-indicator p-3 rounded text-center text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="btn-gold w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Entering the Realm...' : 'Enter the Realm'}
+          </button>
+        </form>
+
+        {/* Footer */}
+        <div className="mt-8 pt-6 border-t border-[var(--stone-gray)]">
+          <p className="text-center text-sm text-[var(--stone-gray-light)]">
+            Sword Coast • Neverwinter Region
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
     </div>
-  );
+  )
 }

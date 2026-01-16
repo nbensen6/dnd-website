@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  DM
+  PLAYER
+}
+
+model User {
+  id         String      @id @default(cuid())
+  username   String      @unique
+  password   String
+  role       Role        @default(PLAYER)
+  characters Character[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model Character {
+  id               String          @id @default(cuid())
+  userId           String
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  race             String
+  class            String
+  level            Int             @default(1)
+  background       String?
+  alignment        String?
+  experiencePoints Int             @default(0)
+
+  // Hit Points
+  hp               Int             @default(10)
+  maxHp            Int             @default(10)
+  tempHp           Int             @default(0)
+  hitDice          String?
+  hitDiceRemaining Int             @default(1)
+
+  // Combat Stats
+  armorClass       Int             @default(10)
+  initiative       Int             @default(0)
+  speed            Int             @default(30)
+  proficiencyBonus Int             @default(2)
+
+  // Ability Scores
+  strength         Int             @default(10)
+  dexterity        Int             @default(10)
+  constitution     Int             @default(10)
+  intelligence     Int             @default(10)
+  wisdom           Int             @default(10)
+  charisma         Int             @default(10)
+
+  // Saving Throw Proficiencies (JSON array of ability names)
+  savingThrowProficiencies String[] @default([])
+
+  // Skill Proficiencies (JSON array of skill names)
+  skillProficiencies       String[] @default([])
+
+  // Features, Traits, and Notes
+  features         String?
+  traits           String?
+  ideals           String?
+  bonds            String?
+  flaws            String?
+  notes            String?
+
+  // Death Saves
+  deathSaveSuccesses Int          @default(0)
+  deathSaveFailures  Int          @default(0)
+
+  // Currency
+  copperPieces     Int             @default(0)
+  silverPieces     Int             @default(0)
+  electrumPieces   Int             @default(0)
+  goldPieces       Int             @default(0)
+  platinumPieces   Int             @default(0)
+
+  // Relations
+  inventory        InventoryItem[]
+  spells           Spell[]
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model InventoryItem {
+  id          String    @id @default(cuid())
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  name        String
+  quantity    Int       @default(1)
+  description String?
+  weight      Float?
+  equipped    Boolean   @default(false)
+  attunement  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Spell {
+  id           String    @id @default(cuid())
+  characterId  String
+  character    Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  name         String
+  level        Int       @default(0) // 0 = cantrip
+  school       String?
+  castingTime  String?
+  range        String?
+  components   String?
+  duration     String?
+  description  String?
+  prepared     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model BattlefieldState {
+  id          String   @id @default(cuid())
+  name        String   @default("Battle Map")
+  mapImageUrl String?
+  gridSize    Int      @default(40) // pixels per grid square
+  gridWidth   Int      @default(20) // number of columns
+  gridHeight  Int      @default(15) // number of rows
+  tokens      Json     @default("[]") // Array of {id, characterId?, name, x, y, size, color, isNPC}
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

@@ -1,26 +1,230 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Sword Coast Fantasy Theme */
+  --forest-green: #1a3a2f;
+  --forest-green-light: #2a5a4a;
+  --parchment: #f4e4c1;
+  --parchment-dark: #e8d4a8;
+  --gold: #c9a227;
+  --gold-light: #ddb73a;
+  --stone-gray: #4a4a4a;
+  --stone-gray-light: #6a6a6a;
+  --deep-red: #8b1a1a;
+  --deep-red-light: #a52a2a;
+  --background: var(--forest-green);
+  --foreground: var(--parchment);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-forest: var(--forest-green);
+  --color-forest-light: var(--forest-green-light);
+  --color-parchment: var(--parchment);
+  --color-parchment-dark: var(--parchment-dark);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-stone: var(--stone-gray);
+  --color-stone-light: var(--stone-gray-light);
+  --color-danger: var(--deep-red);
+  --color-danger-light: var(--deep-red-light);
+  --font-medieval: 'Cinzel', serif;
+  --font-body: 'Crimson Text', serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(135deg, var(--forest-green) 0%, #0f2a1f 100%);
+  color: var(--parchment);
+  font-family: 'Crimson Text', serif;
+  min-height: 100vh;
+}
+
+/* Parchment texture effect */
+.parchment {
+  background: linear-gradient(135deg, var(--parchment) 0%, var(--parchment-dark) 100%);
+  color: var(--stone-gray);
+  border-radius: 4px;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.3),
+    inset 0 0 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Stone/wood frame borders */
+.frame-border {
+  border: 4px solid var(--stone-gray);
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Gold accent buttons */
+.btn-gold {
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
+  color: var(--forest-green);
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  border: 2px solid var(--stone-gray);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-gold:hover {
+  background: linear-gradient(180deg, var(--gold) 0%, #b8911f 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-gold:active {
+  transform: translateY(0);
+}
+
+/* Forest green buttons */
+.btn-forest {
+  background: linear-gradient(180deg, var(--forest-green-light) 0%, var(--forest-green) 100%);
+  color: var(--parchment);
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  border: 2px solid var(--gold);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-forest:hover {
+  background: linear-gradient(180deg, var(--forest-green) 0%, #0f2a1f 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Danger/HP indicator */
+.danger-indicator {
+  background: linear-gradient(180deg, var(--deep-red-light) 0%, var(--deep-red) 100%);
+  color: var(--parchment);
+}
+
+/* Input fields with fantasy styling */
+.fantasy-input {
+  background: var(--parchment);
+  color: var(--stone-gray);
+  border: 2px solid var(--stone-gray);
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-family: 'Crimson Text', serif;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.fantasy-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.3);
+}
+
+.fantasy-input::placeholder {
+  color: var(--stone-gray-light);
+}
+
+/* Medieval heading styles */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+}
+
+/* Card component */
+.fantasy-card {
+  background: linear-gradient(135deg, var(--parchment) 0%, var(--parchment-dark) 100%);
+  color: var(--stone-gray);
+  border: 3px solid var(--stone-gray);
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Subtle torch flicker animation */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.95; }
+  75% { opacity: 0.98; }
+}
+
+.torch-glow {
+  animation: flicker 3s infinite;
+  box-shadow: 0 0 30px rgba(201, 162, 39, 0.3);
+}
+
+/* Stat block styling */
+.stat-block {
+  background: var(--parchment);
+  border: 2px solid var(--gold);
+  border-radius: 4px;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.stat-value {
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--forest-green);
+}
+
+.stat-modifier {
+  font-family: 'Cinzel', serif;
+  font-size: 0.875rem;
+  color: var(--stone-gray);
+}
+
+.stat-label {
+  font-family: 'Crimson Text', serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--stone-gray-light);
+}
+
+/* HP Bar */
+.hp-bar {
+  height: 24px;
+  background: var(--stone-gray);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 2px solid var(--gold);
+}
+
+.hp-fill {
+  height: 100%;
+  background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%);
+  transition: width 0.3s ease;
+}
+
+.hp-fill.damaged {
+  background: linear-gradient(180deg, #facc15 0%, #eab308 100%);
+}
+
+.hp-fill.critical {
+  background: linear-gradient(180deg, var(--deep-red-light) 0%, var(--deep-red) 100%);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--forest-green);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--stone-gray);
+  border-radius: 6px;
+  border: 2px solid var(--forest-green);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--stone-gray-light);
 }
