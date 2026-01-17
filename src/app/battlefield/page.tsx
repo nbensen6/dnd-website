@@ -48,6 +48,12 @@ const TOKEN_COLORS = [
   '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280', '#1f2937'
 ]
 
+// Predefined maps available in the public folder
+const AVAILABLE_MAPS = [
+  { name: 'No Map (Grid Only)', url: '', gridWidth: 20, gridHeight: 15 },
+  { name: 'Cragmaw Hideout', url: '/maps/cragmaw-hideout.jpg', gridWidth: 30, gridHeight: 22 },
+]
+
 export default function BattlefieldPage() {
   const { data: session } = useSession()
   const [battlefield, setBattlefield] = useState<BattlefieldState | null>(null)
@@ -443,21 +449,57 @@ export default function BattlefieldPage() {
       {/* Map Settings Modal */}
       {showMapSettings && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="fantasy-card p-6 w-full max-w-md">
+          <div className="fantasy-card p-6 w-full max-w-lg">
             <h2 className="text-2xl text-[var(--forest-green)] mb-4">Map Settings</h2>
             <div className="space-y-4">
+              {/* Predefined Maps */}
+              <div>
+                <label className="block text-sm font-medium text-[var(--stone-gray)] mb-2">
+                  Select a Map
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {AVAILABLE_MAPS.map(map => (
+                    <button
+                      key={map.name}
+                      onClick={() => setMapSettings({
+                        ...mapSettings,
+                        mapImageUrl: map.url,
+                        gridWidth: map.gridWidth,
+                        gridHeight: map.gridHeight
+                      })}
+                      className={`p-3 rounded border-2 text-left transition-all ${
+                        mapSettings.mapImageUrl === map.url
+                          ? 'border-[var(--gold)] bg-[var(--gold)]/10'
+                          : 'border-[var(--stone-gray)]/30 hover:border-[var(--gold)]/50'
+                      }`}
+                    >
+                      <div className="text-sm font-medium text-[var(--parchment)]">{map.name}</div>
+                      <div className="text-xs text-[var(--stone-gray-light)]">
+                        {map.gridWidth} x {map.gridHeight} grid
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom URL */}
               <div>
                 <label className="block text-sm font-medium text-[var(--stone-gray)] mb-1">
-                  Map Image URL
+                  Or Enter Custom Map URL
                 </label>
                 <input
                   type="url"
                   value={mapSettings.mapImageUrl}
                   onChange={e => setMapSettings({ ...mapSettings, mapImageUrl: e.target.value })}
                   className="fantasy-input w-full"
-                  placeholder="https://example.com/map.jpg"
+                  placeholder="/maps/your-map.jpg"
                 />
+                <p className="text-xs text-[var(--stone-gray-light)] mt-1">
+                  Add images to public/maps/ folder, then use /maps/filename.jpg
+                </p>
               </div>
+
+              {/* Grid Settings */}
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-[var(--stone-gray)] mb-1">

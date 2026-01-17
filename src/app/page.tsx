@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
@@ -32,8 +33,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="fantasy-card torch-glow p-8 w-full max-w-md">
+    <div className="min-h-screen relative flex items-center justify-center p-4">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/images/phandelver-hero.jpg"
+          alt="Phandelver"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--forest-green)]/80 via-black/60 to-[var(--forest-green)]/80" />
+      </div>
+
+      <div className="fantasy-card torch-glow p-8 w-full max-w-md relative z-10">
         {/* D20 Icon */}
         <div className="flex justify-center mb-6">
           <svg
