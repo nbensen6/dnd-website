@@ -6,13 +6,15 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { io, Socket } from 'socket.io-client'
 
-// Dynamically import Konva components to avoid SSR issues
-const Stage = dynamic(() => import('react-konva').then(mod => mod.Stage), { ssr: false })
-const Layer = dynamic(() => import('react-konva').then(mod => mod.Layer), { ssr: false })
-const Rect = dynamic(() => import('react-konva').then(mod => mod.Rect), { ssr: false })
-const Circle = dynamic(() => import('react-konva').then(mod => mod.Circle), { ssr: false })
-const Image = dynamic(() => import('react-konva').then(mod => mod.Image), { ssr: false })
-const Text = dynamic(() => import('react-konva').then(mod => mod.Text), { ssr: false })
+// Dynamically import the entire canvas component to avoid SSR issues with Konva
+const BattlefieldCanvas = dynamic(() => import('@/components/BattlefieldCanvas'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex-1 flex items-center justify-center bg-[#0f2a1f]">
+      <div className="text-[var(--gold)]">Loading battlefield...</div>
+    </div>
+  )
+})
 
 interface Token {
   id: string
@@ -57,7 +59,6 @@ export default function BattlefieldPage() {
   const [showMapSettings, setShowMapSettings] = useState(false)
   const [newToken, setNewToken] = useState({ name: '', characterId: '', color: TOKEN_COLORS[0], isNPC: false })
   const [mapSettings, setMapSettings] = useState({ gridSize: 40, gridWidth: 20, gridHeight: 15, mapImageUrl: '' })
-  const [mapImage, setMapImage] = useState<HTMLImageElement | null>(null)
   const socketRef = useRef<Socket | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -73,16 +74,6 @@ export default function BattlefieldPage() {
       }
     }
   }, [])
-
-  useEffect(() => {
-    if (battlefield?.mapImageUrl) {
-      const img = new window.Image()
-      img.src = battlefield.mapImageUrl
-      img.onload = () => setMapImage(img)
-    } else {
-      setMapImage(null)
-    }
-  }, [battlefield?.mapImageUrl])
 
   const initSocket = () => {
     socketRef.current = io({
@@ -190,13 +181,13 @@ export default function BattlefieldPage() {
     }
   }, [battlefield])
 
-  const canMoveToken = (token: Token) => {
+  const canMoveToken = useCallback((token: Token) => {
     if (isDM) return true
     if (token.isNPC) return false
     if (!token.characterId) return false
     const character = characters.find(c => c.id === token.characterId)
     return character?.userId === session?.user?.id
-  }
+  }, [isDM, characters, session?.user?.id])
 
   const addToken = async () => {
     if (!battlefield || !newToken.name) return
@@ -227,7 +218,7 @@ export default function BattlefieldPage() {
     setShowAddToken(false)
   }
 
-  const removeToken = async (tokenId: string) => {
+  const removeToken = useCallback(async (tokenId: string) => {
     if (!battlefield || !isDM) return
 
     const updatedTokens = battlefield.tokens.filter(t => t.id !== tokenId)
@@ -240,7 +231,7 @@ export default function BattlefieldPage() {
         tokens: updatedTokens
       })
     }
-  }
+  }, [battlefield, isDM])
 
   const updateMapSettings = async () => {
     if (!battlefield || !isDM) return
@@ -297,9 +288,6 @@ export default function BattlefieldPage() {
     )
   }
 
-  const stageWidth = battlefield.gridWidth * battlefield.gridSize
-  const stageHeight = battlefield.gridHeight * battlefield.gridSize
-
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -345,97 +333,16 @@ export default function BattlefieldPage() {
         className="flex-1 overflow-hidden bg-[#0f2a1f] cursor-grab active:cursor-grabbing"
         onWheel={handleWheel}
       >
-        <Stage
-          width={typeof window !== 'undefined' ? window.innerWidth : 1200}
-          height={typeof window !== 'undefined' ? window.innerHeight - 100 : 700}
-          scaleX={scale}
-          scaleY={scale}
-          x={stagePos.x}
-          y={stagePos.y}
-          draggable
-          onDragEnd={(e) => setStagePos({ x: e.target.x(), y: e.target.y() })}
-        >
-          <Layer>
-            {/* Background */}
-            <Rect
-              x={0}
-              y={0}
-              width={stageWidth}
-              height={stageHeight}
-              fill="#2a2a2a"
-            />
-
-            {/* Map Image */}
-            {mapImage && (
-              <Image
-                image={mapImage}
-                x={0}
-                y={0}
-                width={stageWidth}
-                height={stageHeight}
-              />
-            )}
-
-            {/* Grid */}
-            {Array.from({ length: battlefield.gridWidth + 1 }).map((_, i) => (
-              <Rect
-                key={`v-${i}`}
-                x={i * battlefield.gridSize}
-                y={0}
-                width={1}
-                height={stageHeight}
-                fill="rgba(255,255,255,0.2)"
-              />
-            ))}
-            {Array.from({ length: battlefield.gridHeight + 1 }).map((_, i) => (
-              <Rect
-                key={`h-${i}`}
-                x={0}
-                y={i * battlefield.gridSize}
-                width={stageWidth}
-                height={1}
-                fill="rgba(255,255,255,0.2)"
-              />
-            ))}
-
-            {/* Tokens */}
-            {battlefield.tokens.map(token => (
-              <Circle
-                key={token.id}
-                x={token.x + battlefield.gridSize / 2}
-                y={token.y + battlefield.gridSize / 2}
-                radius={token.size / 2}
-                fill={token.color}
-                stroke={canMoveToken(token) ? '#c9a227' : '#666'}
-                strokeWidth={canMoveToken(token) ? 3 : 1}
-                draggable={canMoveToken(token)}
-                onDragEnd={(e) => {
-                  const newX = e.target.x() - battlefield.gridSize / 2
-                  const newY = e.target.y() - battlefield.gridSize / 2
-                  handleTokenDragEnd(token, newX, newY)
-                }}
-                onContextMenu={(e) => {
-                  e.evt.preventDefault()
-                  if (isDM) removeToken(token.id)
-                }}
-              />
-            ))}
-
-            {/* Token Labels */}
-            {battlefield.tokens.map(token => (
-              <Text
-                key={`label-${token.id}`}
-                x={token.x}
-                y={token.y + battlefield.gridSize + 2}
-                width={battlefield.gridSize}
-                text={token.name}
-                fontSize={10}
-                fill="#fff"
-                align="center"
-              />
-            ))}
-          </Layer>
-        </Stage>
+        <BattlefieldCanvas
+          battlefield={battlefield}
+          scale={scale}
+          stagePos={stagePos}
+          setStagePos={setStagePos}
+          canMoveToken={canMoveToken}
+          handleTokenDragEnd={handleTokenDragEnd}
+          isDM={isDM}
+          removeToken={removeToken}
+        />
       </div>
 
       {/* Token Legend */}
