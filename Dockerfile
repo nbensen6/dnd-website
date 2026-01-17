@@ -3,7 +3,7 @@ FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl openssl-dev
 WORKDIR /app
 
 # Copy package files
@@ -18,6 +18,7 @@ RUN npx prisma generate
 
 # Rebuild the source code only when needed
 FROM base AS builder
+RUN apk add --no-cache openssl openssl-dev
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -32,6 +33,9 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
@@ -41,6 +45,10 @@ RUN adduser --system --uid 1001 nextjs
 # Copy necessary files
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
+
+# Copy Prisma client with engine
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
